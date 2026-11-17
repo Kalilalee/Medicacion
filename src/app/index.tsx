@@ -4,8 +4,9 @@ import { AppState, Button, Modal, ScrollView, StyleSheet, Text, useWindowDimensi
 import { Intro, Notice, Page, PrimaryButton, ScreenHeader, TextAction, styles } from '../components/ui';
 import { Bell, Clock3, LogOut, Pill, Plus, Repeat2, Trash2 } from '../components/icons';
 import { MedicationCard } from '../components/MedicationCard';
-import { errorMessage, useApp } from '../context/AppContext';
+import { useMedicationStore } from '../stores/medicationStore';
 import { colors, serif, wideLayout } from '../theme';
+import { errorMessage } from '../utils/errors';
 import { nextReminder, reminderDay } from '../utils/validation';
 import { notificationsAvailable, testNotification } from '../services/notifications';
 import { Medication } from '../types';
@@ -13,7 +14,14 @@ import { Medication } from '../types';
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const split = width >= wideLayout;
-  const { username, medications, logout, remove, notice, dismissNotice, remindersEnabled, enableReminders } = useApp();
+  const username = useMedicationStore((state) => state.username);
+  const medications = useMedicationStore((state) => state.medications);
+  const logout = useMedicationStore((state) => state.logout);
+  const remove = useMedicationStore((state) => state.remove);
+  const notice = useMedicationStore((state) => state.notice);
+  const dismissNotice = useMedicationStore((state) => state.dismissNotice);
+  const remindersEnabled = useMedicationStore((state) => state.remindersEnabled);
+  const enableReminders = useMedicationStore((state) => state.enableReminders);
   const [error, setError] = useState('');
   const [feedback, setFeedback] = useState('');
   const [busy, setBusy] = useState(false);
@@ -148,6 +156,7 @@ export default function HomeScreen() {
             <View style={s.list}>
               {ordered.map((medication) => (
                 <MedicationCard key={medication.id} medication={medication}
+                  onOpen={() => router.push({ pathname: '/medication/[id]', params: { id: medication.id } })}
                   onDelete={() => setPendingDelete(medication)} deleting={deleting} />
               ))}
             </View>
@@ -171,6 +180,12 @@ export default function HomeScreen() {
             <View style={s.iconBadge}><Trash2 color={colors.error} size={19} strokeWidth={1.65} /></View>
             <Text accessibilityRole="header" style={styles.sectionTitle}>¿Eliminar medicamento?</Text>
             <Text style={s.reminderText}>Se eliminará {pendingDelete?.name} y se cancelará su recordatorio diario.</Text>
+            {Boolean(pendingDelete?.intakes?.length) && (
+              <Text style={s.reminderText}>También se eliminará su historial de tomas.</Text>
+            )}
+            {pendingDelete?.intakes?.some((intake) => intake.calendarEvent) && (
+              <Text style={s.reminderText}>Los eventos guardados en el calendario del celular se administran desde Calendario.</Text>
+            )}
             <PrimaryButton title="Sí, eliminar" icon={Trash2} danger loading={deleting} onPress={() => void confirmDelete()} />
             <PrimaryButton title="Conservar medicamento" secondary disabled={deleting} onPress={() => setPendingDelete(null)} />
           </View>

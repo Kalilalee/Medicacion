@@ -3,8 +3,8 @@ import { Medication } from '../types';
 import { colors } from '../theme';
 import { Trash2 } from './icons';
 
-export function MedicationCard({ medication, onDelete, deleting = false }: {
-  medication: Medication; onDelete: () => void; deleting?: boolean;
+export function MedicationCard({ medication, onOpen, onDelete, deleting = false }: {
+  medication: Medication; onOpen?: () => void; onDelete: () => void; deleting?: boolean;
 }) {
   return (
     <View style={styles.card}>
@@ -12,10 +12,13 @@ export function MedicationCard({ medication, onDelete, deleting = false }: {
         <Text style={styles.time}>{medication.time}</Text>
         <Text style={styles.daily}>DIARIO</Text>
       </View>
-      <View style={styles.details}>
+      <TouchableOpacity style={styles.details} accessibilityRole={onOpen ? 'button' : undefined}
+        accessibilityLabel={onOpen ? `Abrir ficha de ${medication.name}` : undefined}
+        disabled={!onOpen || deleting} onPress={onOpen}>
         <Text style={styles.name}>{medication.name}</Text>
         <Text style={styles.note}>{medication.note || 'Recordatorio diario'}</Text>
-      </View>
+        {onOpen && <Text style={styles.open}>Ver ficha</Text>}
+      </TouchableOpacity>
       <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Eliminar ${medication.name}`}
         accessibilityState={{ disabled: deleting }} disabled={deleting}
         onPress={onDelete} style={[styles.delete, deleting && styles.disabled]}>
@@ -33,6 +36,7 @@ const styles = StyleSheet.create({
   details: { flex: 1, minWidth: 0, gap: 4 },
   name: { color: colors.ink, fontSize: 15, lineHeight: 21, fontWeight: '600' },
   note: { color: colors.muted, fontSize: 13, lineHeight: 19 },
+  open: { color: colors.primary, fontSize: 12, lineHeight: 18, fontWeight: '600' },
   delete: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 9, backgroundColor: colors.background },
   disabled: { opacity: 0.58 },
 });

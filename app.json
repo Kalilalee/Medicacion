@@ -13,6 +13,13 @@
     },
     "android": {
       "package": "com.atiempo.medicacion",
+      "permissions": [
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR"
+      ],
+      "blockedPermissions": [
+        "android.permission.WRITE_CONTACTS"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#30473B",
         "foregroundImage": "./assets/icon.png"
@@ -25,8 +32,36 @@
     },
     "plugins": [
       "expo-router",
-      ["expo-notifications", { "color": "#30473B" }]
+      [
+        "expo-notifications",
+        {
+          "color": "#30473B"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Permití usar la cámara para fotografiar un medicamento.",
+          "photosPermission": "Permití elegir una foto para identificar un medicamento.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Permití elegir un contacto para asociarlo a un medicamento."
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Permití guardar la próxima toma en el calendario del dispositivo."
+        }
+      ],
+      "expo-status-bar"
     ],
-    "experiments": { "typedRoutes": true }
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

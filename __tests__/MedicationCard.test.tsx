@@ -23,3 +23,10 @@ it('desactiva la eliminación mientras se guarda la operación', async () => {
   await fireEvent.press(button);
   expect(onDelete).not.toHaveBeenCalled();
 });
+
+it('permite abrir la ficha desde el medicamento de la lista', async () => {
+  const onOpen = jest.fn();
+  const screen = await render(<MedicationCard medication={medication} onDelete={jest.fn()} onOpen={onOpen} />);
+  await fireEvent.press(screen.getByRole('button', { name: 'Abrir ficha de Mi medicación' }));
+  expect(onOpen).toHaveBeenCalledTimes(1);
+});

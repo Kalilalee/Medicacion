@@ -2,8 +2,8 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { AuthLayout, Field, Notice, PrimaryButton, TextAction } from '../components/ui';
 import { ArrowLeft, UserRound } from '../components/icons';
-import { errorMessage } from '../context/AppContext';
 import { register } from '../services/storage';
+import { errorMessage } from '../utils/errors';
 import { validateAccount } from '../utils/validation';
 
 export default function RegisterScreen() {

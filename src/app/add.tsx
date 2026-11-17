@@ -1,21 +1,36 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Field, Intro, Notice, Page, PrimaryButton, ScreenHeader, TextAction, styles } from '../components/ui';
-import { ArrowLeft, Clock3, Plus } from '../components/icons';
-import { errorMessage, useApp } from '../context/AppContext';
+import { ArrowLeft, Check, Clock3, Plus } from '../components/icons';
+import { useMedicationStore } from '../stores/medicationStore';
 import { colors, wideLayout } from '../theme';
+import { Medication } from '../types';
+import { errorMessage } from '../utils/errors';
 import { validateMedication } from '../utils/validation';
 
 const suggestedTimes = ['08:00', '14:00', '21:00'];
 
 export default function AddScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const medication = useMedicationStore((state) => state.medications.find((item) => item.id === id));
+  if (id && !medication) {
+    return <Page>
+      <ScreenHeader action={<TextAction title="Mi rutina" icon={ArrowLeft} onPress={() => router.replace('/')} />} />
+      <Intro title="Medicamento no disponible" description="Volvé a tu rutina para ver los medicamentos guardados." />
+    </Page>;
+  }
+  return <MedicationForm key={id ?? 'new'} medication={medication} />;
+}
+
+function MedicationForm({ medication }: { medication?: Medication }) {
   const { width } = useWindowDimensions();
   const split = width >= wideLayout;
-  const { add } = useApp();
-  const [name, setName] = useState('');
-  const [time, setTime] = useState('08:00');
-  const [note, setNote] = useState('');
+  const add = useMedicationStore((state) => state.add);
+  const update = useMedicationStore((state) => state.update);
+  const [name, setName] = useState(medication?.name ?? '');
+  const [time, setTime] = useState(medication?.time ?? '08:00');
+  const [note, setNote] = useState(medication?.note ?? '');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -39,7 +54,8 @@ export default function AddScreen() {
     setBusy(true);
     setError('');
     try {
-      await add(draft);
+      if (medication) await update(medication.id, draft);
+      else await add(draft);
       returnToRoutine();
     } catch (error) {
       setError(errorMessage(error));
@@ -60,11 +76,11 @@ export default function AddScreen() {
 
   return (
     <Page wide={split}>
-      <ScreenHeader action={<TextAction title="Mi rutina" icon={ArrowLeft} disabled={busy} onPress={returnToRoutine} />} />
+      <ScreenHeader action={<TextAction title={medication ? 'Volver' : 'Mi rutina'} icon={ArrowLeft} disabled={busy} onPress={returnToRoutine} />} />
       <View style={[s.layout, split && s.layoutWide]}>
         <View style={[s.heading, split && s.headingWide]}>
-          <Intro eyebrow="MI RUTINA" title="Nuevo medicamento"
-            description="Agregá el nombre y elegí el horario del recordatorio." />
+          <Intro eyebrow="MI RUTINA" title={medication ? 'Editar medicamento' : 'Nuevo medicamento'}
+            description={medication ? 'Actualizá los datos y el horario del aviso diario.' : 'Agregá el nombre y elegí el horario del recordatorio.'} />
           {split && reminderInfo}
         </View>
         <View style={[styles.card, s.form, split && s.formWide]}>
@@ -91,7 +107,8 @@ export default function AddScreen() {
             maxLength={140} multiline editable={!busy} />
           {!split && reminderInfo}
           <Notice message={error} error />
-          <PrimaryButton title="Guardar medicamento" icon={Plus} loading={busy} onPress={() => void submit()} />
+          <PrimaryButton title={medication ? 'Guardar cambios' : 'Guardar medicamento'}
+            icon={medication ? Check : Plus} loading={busy} onPress={() => void submit()} />
         </View>
       </View>
     </Page>

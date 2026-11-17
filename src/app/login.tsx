@@ -3,11 +3,12 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { AuthLayout, Field, Notice, PrimaryButton, TextAction, styles } from '../components/ui';
 import { ArrowRight, LockKeyhole } from '../components/icons';
-import { errorMessage, useApp } from '../context/AppContext';
+import { useMedicationStore } from '../stores/medicationStore';
 import { colors } from '../theme';
+import { errorMessage } from '../utils/errors';
 
 export default function LoginScreen() {
-  const { login } = useApp();
+  const login = useMedicationStore((state) => state.login);
   const { registered } = useLocalSearchParams<{ registered?: string }>();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
